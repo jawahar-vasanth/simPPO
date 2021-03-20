@@ -1,8 +1,3 @@
-"""
-	This file is the executable for running PPO. It is based on this medium article: 
-	https://medium.com/@eyyu/coding-ppo-from-scratch-with-pytorch-part-1-4-613dfc1b14c8
-"""
-
 import gym
 import sys
 import torch
