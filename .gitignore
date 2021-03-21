@@ -1,2 +1,10 @@
+# On Branch Master
+
+# Ignore all data files
 /data
+
+# Ignore pycache files
+/__pycache__
+
+# Ignore the executable produced
 *.cpython-37.pyc

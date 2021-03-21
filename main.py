@@ -11,6 +11,8 @@ from arguments import get_args
 from ppo import PPO
 from network import FeedForwardNN
 from eval_policy import eval_policy
+from eval_progress import eval_progress
+
 
 def train(env, hyperparameters, actor_model, critic_model, datapath, exp_name):
 	print(f"Training", flush=True)
@@ -33,9 +35,9 @@ def train(env, hyperparameters, actor_model, critic_model, datapath, exp_name):
 		relpath = ''.join([ymd_time, exp_name])
 		datapath = osp.join(datapath, relpath)
 		if not os.path.exists(datapath): os.makedirs(datapath)
-	model.learn(total_timesteps=100_000, logpath = datapath)
+	model.learn(total_timesteps=10_000_000, logpath = datapath)
 
-def test(env, actor_model):
+def test(env, datapath, actor_model, mode):
 	print(f"Testing {actor_model}", flush=True)
 
 	if actor_model == '':
@@ -44,9 +46,26 @@ def test(env, actor_model):
 
 	obs_dim = env.observation_space.shape[0]
 	act_dim = env.action_space.shape[0]
-	policy = FeedForwardNN(obs_dim, act_dim)
-	policy.load_state_dict(torch.load(actor_model))
-	eval_policy(policy=policy, env=env, render=True)
+	entries = os.listdir(datapath)
+	entries = [int(x) for x in entries]
+	entries.sort()
+
+	if mode == 'test':
+		policy = FeedForwardNN(obs_dim, act_dim)
+		actor_model = datapath + "/" + str(entries[-1]) + "/" + actor_model
+		policy.load_state_dict(torch.load(actor_model))
+		print("Iteration "+ str(entries[-1]))
+		eval_policy(policy=policy, env=env, render=True)
+	
+	if mode == 'progress':
+		eval_progress(list_dir = entries, file_dir = datapath, actor_model = actor_model,\
+			 obs_dim = obs_dim, act_dim = act_dim, env = env, render = True)
+		'''
+		for filename in entries:
+			actor_model = datapath + str(filename) + "/" + actor_model
+			policy = FeedForwardNN(obs_dim, act_dim)
+			eval_progress(policy=policy, env=env, render=True)
+		'''
 
 def main(args):
 	hyperparameters = {
@@ -57,7 +76,8 @@ def main(args):
 				'lr': 3e-4, 
 				'clip': 0.2,
 				'render': True,
-				'render_every_i': 1,
+				'save_freq': 10,
+				'render_every_i': 10,
 				'interm_save': True
 			  }
 	env_name = 'LunarLanderContinuous-v2'
@@ -70,7 +90,7 @@ def main(args):
 		train(env=env, hyperparameters=hyperparameters, actor_model=args.actor_model,\
 			critic_model=args.critic_model, datapath = args.datapath, exp_name = args.exp_name)
 	else:
-		test(env=env, actor_model=args.datapath + "/"+ args.actor_model)
+		test(env=env, datapath = args.datapath, actor_model = args.actor_model, mode = args.mode)
 
 if __name__ == '__main__':
 	args = get_args()

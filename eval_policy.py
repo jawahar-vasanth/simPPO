@@ -49,3 +49,4 @@ def eval_policy(policy, env, render=False):
 	# Rollout with the policy and environment, and log each episode's data
 	for ep_num, (ep_len, ep_ret) in enumerate(rollout(policy, env, render)):
 		_log_summary(ep_len=ep_len, ep_ret=ep_ret, ep_num=ep_num)
+	env.close()	
