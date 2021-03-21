@@ -1,9 +1,3 @@
-"""
-	The file contains the PPO class to train with.
-	NOTE: All "ALG STEP"s are following the numbers from the original PPO pseudocode.
-			It can be found here: https://spinningup.openai.com/en/latest/_images/math/e62a8971472597f4b014c2da064f636ffe365ba3.svg
-"""
-
 import gym
 import time
 
@@ -19,17 +13,6 @@ class PPO:
 		This is the PPO class we will use as our model in main.py
 	"""
 	def __init__(self, policy_class, env, **hyperparameters):
-		"""
-			Initializes the PPO model, including hyperparameters.
-
-			Parameters:
-				policy_class - the policy class to use for our actor/critic networks.
-				env - the environment to train on.
-				hyperparameters - all extra arguments passed into PPO that should be hyperparameters.
-
-			Returns:
-				None
-		"""
 		# Make sure the environment is compatible with our code
 		assert(type(env.observation_space) == gym.spaces.Box)
 		assert(type(env.action_space) == gym.spaces.Box)
@@ -96,34 +79,19 @@ class PPO:
 			V, _ = self.evaluate(batch_obs, batch_acts)
 			A_k = batch_rtgs - V.detach()                                                                       # ALG STEP 5
 
-			# One of the only tricks I use that isn't in the pseudocode. Normalizing advantages
-			# isn't theoretically necessary, but in practice it decreases the variance of 
-			# our advantages and makes convergence much more stable and faster. I added this because
-			# solving some environments was too unstable without it.
+			# Normalizing advantages to stabilize
 			A_k = (A_k - A_k.mean()) / (A_k.std() + 1e-10)
 
 			# This is the loop where we update our network for some n epochs
 			for _ in range(self.n_updates_per_iteration):                                                       # ALG STEP 6 & 7
 				# Calculate V_phi and pi_theta(a_t | s_t)
 				V, curr_log_probs = self.evaluate(batch_obs, batch_acts)
-
-				# Calculate the ratio pi_theta(a_t | s_t) / pi_theta_k(a_t | s_t)
-				# NOTE: we just subtract the logs, which is the same as
-				# dividing the values and then canceling the log with e^log.
-				# For why we use log probabilities instead of actual probabilities,
-				# here's a great explanation: 
-				# https://cs.stackexchange.com/questions/70518/why-do-we-use-the-log-in-gradient-based-reinforcement-algorithms
-				# TL;DR makes gradient ascent easier behind the scenes.
 				ratios = torch.exp(curr_log_probs - batch_log_probs)
 
 				# Calculate surrogate losses.
 				surr1 = ratios * A_k
 				surr2 = torch.clamp(ratios, 1 - self.clip, 1 + self.clip) * A_k
 
-				# Calculate actor and critic losses.
-				# NOTE: we take the negative min of the surrogate losses because we're trying to maximize
-				# the performance function, but Adam minimizes the loss. So minimizing the negative
-				# performance function maximizes it.
 				actor_loss = (-torch.min(surr1, surr2)).mean()
 				critic_loss = nn.MSELoss()(V, batch_rtgs)
 
@@ -150,10 +118,6 @@ class PPO:
 
 	def rollout(self):
 		"""
-			Too many transformers references, I'm sorry. This is where we collect the batch of data
-			from simulation. Since this is an on-policy algorithm, we'll need to collect a fresh batch
-			of data each time we iterate the actor/critic networks.
-
 			Parameters:
 				None
 
@@ -171,14 +135,9 @@ class PPO:
 		batch_rews = []
 		batch_rtgs = []
 		batch_lens = []
-
-		# Episodic data. Keeps track of rewards per episode, will get cleared
-		# upon each new episode
 		ep_rews = []
 
-		t = 0 # Keeps track of how many timesteps we've run so far this batch
-
-		# Keep simulating until we've run more than or equal to specified timesteps per batch
+		t = 0 
 		while t < self.timesteps_per_batch:
 			ep_rews = [] # rewards collected per episode
 
@@ -315,16 +274,7 @@ class PPO:
 		return V, log_probs
 
 	def _init_hyperparameters(self, hyperparameters):
-		"""
-			Initialize default and custom values for hyperparameters
-
-			Parameters:
-				hyperparameters - the extra arguments included when creating the PPO model, should only include
-									hyperparameters defined below with custom values.
-
-			Return:
-				None
-		"""
+    		
 		# Initialize default values for hyperparameters
 		# Algorithm hyperparameters
 		self.timesteps_per_batch = 4800                 # Number of timesteps to run per batch
@@ -354,18 +304,6 @@ class PPO:
 			print(f"Successfully set seed to {self.seed}")
 
 	def _log_summary(self):
-		"""
-			Print to stdout what we've logged so far in the most recent batch.
-
-			Parameters:
-				None
-
-			Return:
-				None
-		"""
-		# Calculate logging values. I use a few python shortcuts to calculate each value
-		# without explaining since it's not too important to PPO; feel free to look it over,
-		# and if you have any questions you can email me (look at bottom of README)
 		delta_t = self.logger['delta_t']
 		self.logger['delta_t'] = time.time_ns()
 		delta_t = (self.logger['delta_t'] - delta_t) / 1e9
