@@ -1,5 +1,7 @@
+#!/usr/bin/env python
 import gym
 import time
+import os
 
 import numpy as np
 import time
@@ -17,10 +19,7 @@ class PPO:
 		assert(type(env.observation_space) == gym.spaces.Box)
 		assert(type(env.action_space) == gym.spaces.Box)
 
-		# Initialize hyperparameters for training with PPO
 		self._init_hyperparameters(hyperparameters)
-
-		# Extract environment information
 		self.env = env
 		self.obs_dim = env.observation_space.shape[0]
 		self.act_dim = env.action_space.shape[0]
@@ -28,8 +27,6 @@ class PPO:
 		 # Initialize actor and critic networks
 		self.actor = policy_class(self.obs_dim, self.act_dim)                                                   # ALG STEP 1
 		self.critic = policy_class(self.obs_dim, 1)
-
-		# Initialize optimizers for actor and critic
 		self.actor_optim = Adam(self.actor.parameters(), lr=self.lr)
 		self.critic_optim = Adam(self.critic.parameters(), lr=self.lr)
 
@@ -47,7 +44,7 @@ class PPO:
 			'actor_losses': [],     # losses of actor network in current iteration
 		}
 
-	def learn(self, total_timesteps):
+	def learn(self, total_timesteps, logpath):
 		"""
 			Train the actor and critic networks. Here is where the main PPO algorithm resides.
 
@@ -112,9 +109,14 @@ class PPO:
 			self._log_summary()
 
 			# Save our model if it's time
-			if i_so_far % self.save_freq == 0:
-				torch.save(self.actor.state_dict(), './ppo_actor.pth')
-				torch.save(self.critic.state_dict(), './ppo_critic.pth')
+			if i_so_far % self.save_freq == 0 and self.interm_save == False:
+				datapath = logpath
+			if i_so_far % self.save_freq == 0 and self.interm_save == True:
+				datapath = logpath + '/iteration' + str(i_so_far)
+				if not os.path.exists(datapath): os.makedirs(datapath)
+			torch.save(self.actor.state_dict(),datapath + '/ppo_actor.pth')
+			torch.save(self.critic.state_dict(), datapath + '/ppo_critic.pth')
+    		
 
 	def rollout(self):
 		"""
@@ -287,9 +289,9 @@ class PPO:
 		# Miscellaneous parameters
 		self.render = True                              # If we should render during rollout
 		self.render_every_i = 10                        # Only render every n iterations
-		self.save_freq = 10                             # How often we save in number of iterations
+		self.save_freq = 1                             # How often we save in number of iterations
 		self.seed = None                                # Sets the seed of our program, used for reproducibility of results
-
+		self.interm_save = False						# If we need to save intermediate models to visualize training
 		# Change any default values to custom values for specified hyperparameters
 		for param, val in hyperparameters.items():
 			exec('self.' + param + ' = ' + str(val))
