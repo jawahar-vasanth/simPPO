@@ -59,7 +59,6 @@ class PPO:
 		t_so_far = 0 # Timesteps simulated so far
 		i_so_far = 0 # Iterations ran so far
 		while t_so_far < total_timesteps:                                                                       # ALG STEP 2
-			# Autobots, roll out (just kidding, we're collecting our batch simulations here)
 			batch_obs, batch_acts, batch_log_probs, batch_rtgs, batch_lens = self.rollout()                     # ALG STEP 3
 
 			# Calculate how many timesteps we collected this batch
@@ -109,14 +108,15 @@ class PPO:
 			self._log_summary()
 
 			# Save our model if it's time
-			if i_so_far % self.save_freq == 0 and self.interm_save == False:
-				datapath = logpath
-			if i_so_far % self.save_freq == 0 and self.interm_save == True:
-				datapath = logpath + '/iteration' + str(i_so_far)
-				if not os.path.exists(datapath): os.makedirs(datapath)
-			torch.save(self.actor.state_dict(),datapath + '/ppo_actor.pth')
-			torch.save(self.critic.state_dict(), datapath + '/ppo_critic.pth')
-    		
+			if i_so_far % self.save_freq == 0:
+				if self.interm_save == False: datapath = logpath
+				else:
+					datapath = logpath +'/' + str(i_so_far)
+					if not os.path.exists(datapath): os.makedirs(datapath)
+				torch.save(self.actor.state_dict(),datapath + '/ppo_actor.pth')
+				torch.save(self.critic.state_dict(), datapath + '/ppo_critic.pth')
+
+		self.env.close()
 
 	def rollout(self):
 		"""
@@ -170,7 +170,7 @@ class PPO:
 
 				# If the environment tells us the episode is terminated, break
 				if done:
-					break
+					break	
 
 			# Track episodic lengths and rewards
 			batch_lens.append(ep_t + 1)
@@ -185,6 +185,7 @@ class PPO:
 		# Log the episodic returns and episodic lengths in this batch.
 		self.logger['batch_rews'] = batch_rews
 		self.logger['batch_lens'] = batch_lens
+		# self.env.close()
 
 		return batch_obs, batch_acts, batch_log_probs, batch_rtgs, batch_lens
 
@@ -289,7 +290,7 @@ class PPO:
 		# Miscellaneous parameters
 		self.render = True                              # If we should render during rollout
 		self.render_every_i = 10                        # Only render every n iterations
-		self.save_freq = 1                             # How often we save in number of iterations
+		self.save_freq = 10                             # How often we save in number of iterations
 		self.seed = None                                # Sets the seed of our program, used for reproducibility of results
 		self.interm_save = False						# If we need to save intermediate models to visualize training
 		# Change any default values to custom values for specified hyperparameters
