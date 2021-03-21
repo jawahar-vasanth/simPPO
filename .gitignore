@@ -8,3 +8,5 @@
 
 # Ignore the executable produced
 *.cpython-37.pyc
+__pycache__/eval_policy.cpython-37.pyc
+__pycache__/ppo.cpython-37.pyc
