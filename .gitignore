@@ -3,6 +3,9 @@
 # Ignore all data files
 /data
 
+# Ignore the main gym
+/gym-racer
+
 # Ignore pycache files
 /__pycache__
 
@@ -10,3 +13,5 @@
 *.cpython-37.pyc
 __pycache__/eval_policy.cpython-37.pyc
 __pycache__/ppo.cpython-37.pyc
+__pycache__/arguments.cpython-37.pyc
+__pycache__/network.cpython-37.pyc
