@@ -1,11 +1,8 @@
 import numpy as np
 from random import choice
 
-#  from timeit import default_timer as timer
-
 import gym
 from gym import spaces
-
 import pygame
 from pygame.sprite import spritecollide
 
@@ -13,28 +10,20 @@ from lidarCarV0.envs.racer_car import RacerCar
 from lidarCarV0.envs.racer_map import RacerMap
 
 #  from gym_racer.envs.utils import getMyLogger
-
+#  from timeit import default_timer as timer
 
 class RacerEnv(gym.Env):
     metadata = {"render.modes": ["human", "console"]}
     reward_range = (-float("inf"), float("inf"))
-    # TODO how to advertise sensor_array_type properly?
 
     def __init__(
         self,
         sensor_array_type="lidar",
         render_mode="human",
-        sensor_array_params=None,
-        dir_step=3,
-        speed_step=1,
-    ):
-        """
-        """
+        sensor_array_params=None):
         #  logg = getMyLogger(f"c.{__class__.__name__}.__init__")
         #  logg.info(f"Start init RacerEnv")
 
-        self.dir_step = dir_step
-        self.speed_step = speed_step
         self.sensor_array_type = sensor_array_type
         self.render_mode = render_mode
         self.sensor_array_params = sensor_array_params
@@ -59,8 +48,6 @@ class RacerEnv(gym.Env):
 
         # setup the car
         self.racer_car = RacerCar(
-            dir_step=self.dir_step,
-            speed_step=self.speed_step,
             sensor_array_type=self.sensor_array_type,
             render_mode=self.render_mode,
             sensor_array_params=self.sensor_array_params,
@@ -71,26 +58,21 @@ class RacerEnv(gym.Env):
 
         # setup the road
         self.racer_map = RacerMap(
-            self.field_wid, self.field_hei, render_mode=self.render_mode
-        )
-
-        # finish setup pygame environment
+            self.field_wid, self.field_hei, render_mode=self.render_mode)
         self._finish_setup_pygame()
 
         # Define action and observation space
         self._setup_action_obs_space()
-
-        # MAYBE this is called by the user to get the first obs anyway
         self.reset()
 
     def step(self, action):
         """Perform the action
 
-        left-rigth: change steering
-        up-down: accelerate/brake
+        Steer: change steering
+        Throttle: accelerate/brake
         combination of the above
         do nothing
- 
+
         ----------
         This method steps the game forward one step
         Parameters
@@ -114,16 +96,9 @@ class RacerEnv(gym.Env):
         #  logg = getMyLogger(f"c.{__class__.__name__}.step")
         #  logg.info(f"Start env step, action: '{action}'")
 
-        # update the car
         self.racer_car.step(action)
-
-        # compute the reward for this action
         reward, done = self._compute_reward()
-
-        # get collisions from sensor array
         self._collide_sensor_array()
-
-        # analyze the collisions
         obs = self._analyze_collisions()
 
         # create recap of env state
@@ -197,8 +172,7 @@ class RacerEnv(gym.Env):
             raise ValueError(f"Unknown render mode {mode}")
 
     def _setup_action_obs_space(self):
-        """
-        """
+
         self.action_space = spaces.MultiDiscrete([3, 3])
 
         if self.sensor_array_type == "diamond":

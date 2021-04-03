@@ -1,8 +1,12 @@
 import numpy as np
+import math
 from math import ceil
 from math import cos
 from math import radians
 from math import sin
+from scipy.integrate import solve_ivp
+from BicycleModel import LinearBicycleModel, NonLinearBicycleModel
+pi = math.pi
 
 import pygame
 from pygame import Surface
@@ -19,8 +23,6 @@ class RacerCar(Sprite):
         pos_x=0,
         pos_y=0,
         direction=0,
-        dir_step = 3,
-        speed_step = 1,
         sensor_array_type="lidar",
         render_mode="human",
         sensor_array_params=None,
@@ -40,11 +42,7 @@ class RacerCar(Sprite):
         self.sensor_array_params = sensor_array_params
 
         self.direction = direction  # in degrees
-        self.dir_step = dir_step
-
         self.speed = 0
-        self.speed_step = speed_step
-        # viscous drag coefficient
         self.drag_coeff = 0.5
 
         # setup the sensor_array_template
@@ -57,9 +55,9 @@ class RacerCar(Sprite):
     def step(self, action):
         """Perform the action
 
-        Two discrete action spaces:
-            1) accelerate:  NOOP[0], UP[1], DOWN[2]
-            2) steer:  NOOP[0], LEFT[1], RIGHT[2]
+        Two continous action spaces:
+            1) Throttle 
+            2) Steer
         """
         #  logg = logging.getLogger(f"c.{__name__}.step")
         #  logg.debug(f"Doing action {action}")
