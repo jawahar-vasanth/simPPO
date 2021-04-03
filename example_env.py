@@ -7,7 +7,7 @@ import numpy as np  # type: ignore
 import pygame  # type: ignore
 import gym  # type: ignore
 
-import gym_racer  # noqa: F401
+import lidarCarV0  # noqa: F401
 
 
 def parse_arguments():
@@ -116,7 +116,7 @@ def test_interactive_env(num_frames, fps, sensor_array_type):
 
     # create the env
     racer_env = gym.make(
-        "racer-v0",
+        "Lidarcar-v0",
         render_mode="human",
         sensor_array_type=sensor_array_type,
     )

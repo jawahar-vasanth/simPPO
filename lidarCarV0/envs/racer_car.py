@@ -5,7 +5,7 @@ from math import cos
 from math import radians
 from math import sin
 from scipy.integrate import solve_ivp
-from BicycleModel import LinearBicycleModel, NonLinearBicycleModel
+# from BicycleModel import LinearBicycleModel, NonLinearBicycleModel
 pi = math.pi
 
 import pygame
@@ -43,6 +43,7 @@ class RacerCar(Sprite):
 
         self.direction = direction  # in degrees
         self.speed = 0
+        self.dir_step = 3
         self.drag_coeff = 0.5
 
         # setup the sensor_array_template
@@ -111,11 +112,11 @@ class RacerCar(Sprite):
         """Steer the car
         """
         if action == "left":
-            self.direction += self.dir_step
+            self.direction += 3
             if self.direction >= 360:
                 self.direction -= 360
         elif action == "right":
-            self.direction -= self.dir_step
+            self.direction -= 3
             if self.direction < 0:
                 self.direction += 360
 
@@ -124,9 +125,9 @@ class RacerCar(Sprite):
         """
         if action == "up":
             # TODO some threshold, possibly from the drag
-            self.speed += self.speed_step
+            self.speed += 0.1
         elif action == "down":
-            self.speed -= self.speed_step
+            self.speed -= 0.1
             # MAYBE it can go in reverse?
             if self.speed < 0:
                 self.speed = 0
