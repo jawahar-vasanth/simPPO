@@ -128,7 +128,7 @@ def test_interactive_env(num_frames, fps, sensor_array_type):
     going = True
     i = 0
     while going:
-        logg.info("----------    ----------    New frame    ----------    ----------")
+        # logg.info("----------    ----------    New frame    ----------    ----------")
 
         start_frame = timer()
 
@@ -142,28 +142,29 @@ def test_interactive_env(num_frames, fps, sensor_array_type):
                 if event.key == pygame.K_ESCAPE:
                     going = False
             #  logg.debug(f"Done handling")
-
+        s = 15
+        a = 0.1
         keys = pygame.key.get_pressed()
         if keys[pygame.K_d]:  # right
-            action = [0, 2]
+            action = [0, s]
         elif keys[pygame.K_a]:  # left
-            action = [0, 1]
+            action = [0, -s]
         elif keys[pygame.K_w]:  # up
-            action = [1, 0]
+            action = [a, 0]
         elif keys[pygame.K_x]:  # down
-            action = [2, 0]
+            action = [-a, 0]
         elif keys[pygame.K_q]:  # upleft
-            action = [1, 2]
+            action = [a, -s]
         elif keys[pygame.K_e]:  # upright
-            action = [1, 2]
+            action = [a, s]
         elif keys[pygame.K_z]:  # downleft
-            action = [2, 1]
+            action = [-a, s]
         elif keys[pygame.K_c]:  # downright
-            action = [2, 2]
+            action = [-a, -s]
         else:  # nop
             action = [0, 0]
 
-        logg.info(f"Do the action {action}")
+        # logg.info(f"Do the action {action}")
 
         mid_frame = timer()
 
@@ -177,10 +178,10 @@ def test_interactive_env(num_frames, fps, sensor_array_type):
 
         end_frame = timer()
 
-        logg.debug(f"Time for input  {mid_frame-start_frame:.6f} s")
-        logg.debug(f"Time for step   {step_frame-mid_frame:.6f} s")
-        logg.debug(f"Time for render {end_frame-step_frame:.6f} s")
-        logg.debug(f"Time for frame  {end_frame-start_frame:.6f} s")
+        # logg.debug(f"Time for input  {mid_frame-start_frame:.6f} s")
+        # logg.debug(f"Time for step   {step_frame-mid_frame:.6f} s")
+        # logg.debug(f"Time for render {end_frame-step_frame:.6f} s")
+        # logg.debug(f"Time for frame  {end_frame-start_frame:.6f} s")
 
         # wait a bit to limit fps
         clock.tick(fps)

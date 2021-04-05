@@ -38,10 +38,11 @@ class LinearBicycleModel(object):
         self.v += throttle * dt
 
     def derivative(self, t, y, a, delta):
+        delta = np.radians(delta)
         beta = math.atan((Lr/L)*math.tan(delta))
         dx = y[3]*math.cos(y[2] + beta)
         dy = y[3]*math.sin(y[2] + beta)
-        dyaw = (y[3]/Lr)*math.sin(beta)
+        dyaw = np.degrees((y[3]/Lr)*math.sin(beta))
         dv = a
         return [dx,dy,dyaw,dv]
 
@@ -120,10 +121,10 @@ def normalize_angle(angle):
     :param angle: (float)
     :return: (float) Angle in radian in [-pi, pi]
     """
-    while angle > np.pi:
-        angle -= 2.0 * np.pi
+    while angle > 360:
+        angle -= 360
 
-    while angle < -np.pi:
-        angle += 2.0 * np.pi
+    while angle < 0:
+        angle += 360
 
     return angle
