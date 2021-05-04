@@ -2,7 +2,7 @@ import numpy as np
 import math
 import matplotlib.pyplot as plt
 
-max_steer = math.pi/6  # [rad] max steering angle
+max_steer = 30  # [deg] max steering angle
 L = 2.9  # [m] Wheel base of vehicle
 Lr = L / 2.0  # [m]
 Lf = L - Lr
@@ -30,14 +30,15 @@ class LinearBicycleModel(object):
         :param delta: (float) Steering
         """
         delta = np.clip(delta, -max_steer, max_steer)
-
+        delta = np.radians(delta)
         self.x += self.v * np.cos(self.yaw) * dt
         self.y += self.v * np.sin(self.yaw) * dt
-        self.yaw += self.v / L * np.tan(delta) * dt
+        self.yaw += np.degrees(self.v / L * np.tan(delta) * dt)
         self.yaw = normalize_angle(self.yaw)
         self.v += throttle * dt
 
     def derivative(self, t, y, a, delta):
+        delta = np.clip(delta, -max_steer, max_steer)
         delta = np.radians(delta)
         beta = math.atan((Lr/L)*math.tan(delta))
         dx = y[3]*math.cos(y[2] + beta)

@@ -13,6 +13,8 @@ from network import FeedForwardNN
 from eval_policy import eval_policy
 from eval_progress import eval_progress
 
+import lidarCarV0
+
 
 def train(env, hyperparameters, actor_model, critic_model, datapath, exp_name):
 	print(f"Training", flush=True)
@@ -80,7 +82,8 @@ def main(args):
 				'render_every_i': 10,
 				'interm_save': True
 			  }
-	env_name = 'LunarLanderContinuous-v2'
+	# env_name = 'LunarLanderContinuous-v2'
+	env_name = 'Lidarcar-v0'
 	env = gym.make(env_name)
 
 	if args.exp_name == '':
