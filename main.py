@@ -71,20 +71,21 @@ def test(env, datapath, actor_model, mode):
 
 def main(args):
 	hyperparameters = {
-				'timesteps_per_batch': 2048, 
+				'timesteps_per_batch': 1024, 
 				'max_timesteps_per_episode': 200, 
 				'gamma': 0.99, 
-				'n_updates_per_iteration': 10,
+				'n_updates_per_iteration': 5,
 				'lr': 3e-4, 
 				'clip': 0.2,
 				'render': True,
-				'save_freq': 10,
-				'render_every_i': 10,
+				'save_freq': 5,
+				'render_every_i': 100,
 				'interm_save': True
 			  }
 	# env_name = 'LunarLanderContinuous-v2'
+	# env = gym.make(env_name)
 	env_name = 'Lidarcar-v0'
-	env = gym.make(env_name)
+	env = gym.make(env_name,render_mode="human",sensor_array_type='lidar')
 
 	if args.exp_name == '':
     		args.exp_name = env_name
