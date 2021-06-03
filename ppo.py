@@ -2,6 +2,7 @@
 import gym
 import time
 import os
+import pygame
 
 import numpy as np
 import time
@@ -9,6 +10,7 @@ import torch
 import torch.nn as nn
 from torch.optim import Adam
 from torch.distributions import MultivariateNormal
+
 
 class PPO:
 	"""
@@ -146,20 +148,22 @@ class PPO:
 			# Reset the environment. sNote that obs is short for observation. 
 			obs = self.env.reset()
 			done = False
+			rew = 0
 
 			# Run an episode for a maximum of max_timesteps_per_episode timesteps
 			for ep_t in range(self.max_timesteps_per_episode):
 				# If render is specified, render the environment
-				if self.render and (self.logger['i_so_far'] % self.render_every_i == 0) and len(batch_lens) == 0:
-					self.env.render()
-
+				# if self.render and (self.logger['i_so_far'] % self.render_every_i == 0) and len(batch_lens) == 0:
+					# self.env.render()
+				self.env.render()
+				
 				t += 1 # Increment timesteps ran this batch so far
 
 				# Track observations in this batch
 				batch_obs.append(obs)
 
 				# Calculate action and make a step in the env. 
-				# Note that rew is short for reward.
+				# Note tharendert rew is short for reward.
 				action, log_prob = self.get_action(obs)
 				obs, rew, done, _ = self.env.step(action)
 
