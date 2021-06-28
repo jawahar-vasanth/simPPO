@@ -58,8 +58,11 @@ class RacerCat():
         self.c_body.velocity = speed * direction
     
 
-    def reset(self):
-        self.c_body.position = self.pos_x, self.pos_y
+    def reset(self, pos_x=-1, pos_y=-1 ):
+        if pos_x <0 or pos_y < 0 :
+            self.c_body.position = self.pos_x, self.pos_y
+        else:
+            self.c_body.position = pos_x, pos_y
 
 
 
@@ -112,5 +115,31 @@ class RacerGoal():
     def reset(self, x, y):
         self.c_body.position = x, y
 
+class RacerObs2():
+    """ 
+    collection of obstacles for a racer
+    """
+    def __init__(self,
+        pos_x=100,
+        pos_y=100,
+        radius=0.2,
+        ):
+        super().__init__()
+        self.c_body = pymunk.Body(pymunk.inf, pymunk.inf)
+        vertices = [(0, 0), (60, 0), (30, 60)]
+        self.c_shape = pymunk.Poly(self.c_body, vertices, radius = radius)
+        self.c_shape.elasticity = 1.0
+        self.c_body.position = pos_x, pos_y
+        self.c_shape.color = THECOLORS["pink"]
 
+        self.pos_x = pos_x
+        self.pos_y = pos_y  
+    
+    def move(self):
+        speed = random.randint(0, 5)
+        direction = Vec2d(1, 0).rotated(random.randint(-1, 1))
+        self.c_body.velocity = speed * direction
+
+    def reset(self):
+        self.c_body.position = self.pos_x, self.pos_y
 

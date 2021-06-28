@@ -10,7 +10,7 @@ from pymunk.vec2d import Vec2d
 from pymunk.pygame_util import draw
 
 from sonarCarV0.envs.racer_car import RacerCar
-from sonarCarV0.envs.racer_map import RacerGoal, RacerMap, RacerObs, RacerCat, RacerGoal
+from sonarCarV0.envs.racer_map import RacerGoal, RacerMap, RacerObs, RacerCat, RacerGoal, RacerObs2
 from sonarCarV0.envs.BicycleModel import normalize_angle
 
 
@@ -58,9 +58,12 @@ class RacerEnv(gym.Env):
         self.space.add(self.racer_map.static)
         
         self.obstacles = []
-        self.obstacles.append(RacerObs(200, 350, 75))
-        self.obstacles.append(RacerObs(700, 200, 100))
-        self.obstacles.append(RacerObs(600, 600, 35))
+        self.obstacles.append(RacerObs(200, 150, 75))
+        # self.obstacles.append(RacerObs(350, 300, 60))
+        # self.obstacles.append(RacerObs2(200, 350, 75))
+        self.obstacles.append(RacerObs(700, 200, 60))
+        self.obstacles.append(RacerObs(600, 500, 45))
+        self.obstacles.append(RacerObs(300, 600, 50))
         for obs in self.obstacles:
             self.space.add(obs.c_body, obs.c_shape)
         
@@ -71,12 +74,12 @@ class RacerEnv(gym.Env):
 
         # Define action and observation space
         self._setup_action_obs_space()
-        self.reward = -200
+        self.reward = 0
         self.reset()
 
 
     def _setup_action_obs_space(self):
-        self.action_space = spaces.Box(np.array([-100, -0.2]), np.array([100, 0.2]), dtype=np.float32)
+        self.action_space = spaces.Box(np.array([-1000, -0.2]), np.array([1000, 0.2]), dtype=np.float32)
         HEIGHT = self.tot_ray_num
         self.observation_space = spaces.Box(-1, 1, (HEIGHT,), dtype=np.float32)
 
@@ -96,22 +99,32 @@ class RacerEnv(gym.Env):
     def reset(self):
         """Reset the state of the environment to an initial state
         """
+        self.crashed = False
+
         #  pick a random segment of the map and place the car there
-        pos_x, pos_y = random.randint(0,self.field_wid), random.randint(0,self.field_hei)
+        pos_x, pos_y = random.randint(50,self.field_wid-50), random.randint(50,self.field_hei-50)
         dir = random.uniform(-math.pi,math.pi)
-        spd = random.uniform(50,100)
+        spd = random.uniform(10,100)
+        self.racer_car.reset(pos_x, pos_y, direction= dir, speed= spd)
+
         for obst in self.obstacles:
             obst.reset()
         for cat in self.cat:
-            cat.reset()
-        self.racer_car.reset(pos_x, pos_y, direction= dir, speed= spd)
+            pos_x, pos_y = random.randint(50,self.field_wid-50), random.randint(50,self.field_hei-50)
+            cat.reset(pos_x, pos_y)
+
+        jitt = random.randint(50,150)
         p_x, p_y = random.randint(0,1), random.randint(0,1)
         if p_x^p_y == 0:
-            x, y = self.field_wid - pos_x, self.field_hei - pos_y
+            x = (self.field_wid - jitt) if self.field_wid/2 > pos_x else jitt
+            y = (self.field_hei - jitt) if self.field_hei/2 > pos_y else jitt
         elif p_x == 0:
-            x, y = pos_x, self.field_hei - pos_y
+            x = pos_x
+            y = (self.field_hei - jitt) if self.field_hei/2 > pos_y else jitt
         else:
-            x, y = self.field_wid - pos_x,  pos_y
+            x = (self.field_wid - jitt) if self.field_wid/2 > pos_x else jitt
+            y = pos_y
+
         self.goal.reset(x, y)
         # self.racer_car.reset(550, 350, direction= 1.5, speed= spd)
         obs, _ = self._collide_analyze()
@@ -164,6 +177,7 @@ class RacerEnv(gym.Env):
             "car_pos_y": self.racer_car.pos_y,
             "car_dir": self.racer_car.direction,
             "car_speed": self.racer_car.speed,
+            "crash_info": self.crashed,
         }
 
         return obs, self.reward, done, info
@@ -177,14 +191,14 @@ class RacerEnv(gym.Env):
         obs, readings = self._collide_analyze()
         
         if self.goal_reached(readings):
-            reward = 100
+            reward = 500
             done = True 
         elif self.car_is_crashed(readings):
             self.crashed = True
-            reward = -500
+            reward = -200
             done = True
         else:
-            reward = -5 + int(sum(readings)/10)
+            reward = (-3 + int(sum(readings)/40))/10
 
         return obs, reward, done
 
@@ -196,23 +210,6 @@ class RacerEnv(gym.Env):
         normalized_readings = [(x-40.0)/40.0 for x in readings] 
         obs = np.array([normalized_readings])
         return obs, readings
-
-    def recover_from_crash(self, driving_direction):
-        """
-        We hit something, so recover.
-        """
-        while self.crashed:
-            # Go backwards.
-            self.racer_car.car_body.velocity = -100 * driving_direction
-            self.crashed = False
-            for i in range(10):
-                self.racer_car.car_body.angle += .2  # Turn a little.
-                self.screen.fill(THECOLORS["grey7"])  # Red is scary!
-                draw(self.screen, self.space)
-                self.space.step(1./10)
-                if self.draw_screen:
-                    pygame.display.flip()
-                self.clock.tick()
 
     def get_sonar_readings(self, x, y, angle):
         readings = []

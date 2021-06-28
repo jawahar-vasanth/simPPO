@@ -28,7 +28,7 @@ class RacerCar():
         self.direction = direction  # in radians
         self.speed = speed
 
-        self.tspan = [0, 0.1]
+        self.tspan = [0, 0.05]
         self.drag_coeff = 0.5
         self.curr_state = [self.pos_x, self.pos_y, self.direction, self.speed]
 
