@@ -76,7 +76,7 @@ class RacerEnv(gym.Env):
 
 
     def _setup_action_obs_space(self):
-        self.action_space = spaces.Box(np.array([-1, -0.2]), np.array([1, 0.2]), dtype=np.float32)
+        self.action_space = spaces.Box(np.array([-100, -0.2]), np.array([100, 0.2]), dtype=np.float32)
         HEIGHT = self.tot_ray_num
         self.observation_space = spaces.Box(-1, 1, (HEIGHT,), dtype=np.float32)
 

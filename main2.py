@@ -37,7 +37,7 @@ def train(env, hyperparameters, actor_model, critic_model, datapath, exp_name):
 		relpath = ''.join([ymd_time, exp_name])
 		datapath = osp.join(datapath, relpath)
 		if not os.path.exists(datapath): os.makedirs(datapath)
-	model.learn(total_timesteps=100_000, logpath = datapath)
+	model.learn(total_timesteps=1_000_000, logpath = datapath)
 
 def test(env, datapath, actor_model, mode):
 	print(f"Testing {actor_model}", flush=True)
@@ -71,8 +71,8 @@ def test(env, datapath, actor_model, mode):
 
 def main(args):
 	hyperparameters = {
-				'timesteps_per_batch': 4096, 
-				'max_timesteps_per_episode': 512, 
+				'timesteps_per_batch': 2048, 
+				'max_timesteps_per_episode': 200, 
 				'gamma': 0.99, 
 				'n_updates_per_iteration': 10,
 				'lr': 3e-4, 
@@ -84,11 +84,11 @@ def main(args):
 			  }
 	# env_name = 'LunarLanderContinuous-v2'
 	# env = gym.make(env_name)
-	env_name = 'sonarCar-v0'
-	env = gym.make(env_name,render_mode=True ,sensor_display= True)
+	# env_name = 'sonarCar-v0'
+	# env = gym.make(env_name,render_mode=True ,sensor_display= True)
 
-	# env_name = 'LunarLanderContinuous-v2'
-	# env = gym.make('LunarLanderContinuous-v2')
+	env_name = 'LunarLanderContinuous-v2'
+	env = gym.make('LunarLanderContinuous-v2')
 
 	if args.exp_name == '':
     		args.exp_name = env_name
