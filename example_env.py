@@ -29,6 +29,9 @@ def parse_arguments():
         "-i", "--interactive", action="store_true", help="start interactive env"
     )
     parser.add_argument(
+        "-test", "--tester", action="store_true", help="start tester env"
+    )
+    parser.add_argument(
         "-rm",
         "--render_mode",
         type=str,
@@ -142,8 +145,8 @@ def test_interactive_env(num_frames, fps, sensor_array_type):
                 if event.key == pygame.K_ESCAPE:
                     going = False
             #  logg.debug(f"Done handling")
-        s = 15
-        a = 0.1
+        s = 5
+        a = 10
         keys = pygame.key.get_pressed()
         if keys[pygame.K_d]:  # right
             action = [0, s]
@@ -188,6 +191,70 @@ def test_interactive_env(num_frames, fps, sensor_array_type):
 
         if num_frames > 0:
             i += 1
+            if i == num_frames:
+                going = False
+
+
+def tester_fun(num_frames, fps, sensor_array_type):
+    """"""
+    logg = logging.getLogger(f"c.{__name__}.tester_env")
+    logg.setLevel("DEBUG")
+    logg.info("Start tester_env")
+
+    # create the env
+    racer_env = gym.make(
+        "Lidarcar-v0",
+        render_mode="human",
+        sensor_array_type=sensor_array_type,
+    )
+
+    # clock for interactive play
+    clock = pygame.time.Clock()
+
+    # Main Loop
+    going = True
+    i = 1
+    while going:
+        # logg.info("----------    ----------    New frame    ----------    ----------")
+
+        start_frame = timer()
+
+        # Handle Input Events
+        # https://stackoverflow.com/a/22099654
+        for event in pygame.event.get():
+            #  logg.debug(f"Handling event {event}")
+            if event.type == pygame.QUIT:
+                going = False
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    going = False
+            #  logg.debug(f"Done handling")
+        s = 15
+        a = 5
+        action = [0,0]
+        if i%20 ==0: action = [a,s]
+        # logg.info(f"Do the action {action}")
+
+        mid_frame = timer()
+
+        # perform the action
+        obs, reward, done, info = racer_env.step(action)
+
+        step_frame = timer()
+
+        # draw the new state
+        racer_env.render(mode="human", reward=reward)
+        end_frame = timer()
+
+        # logg.debug(f"Time for input  {mid_frame-start_frame:.6f} s")
+        # logg.debug(f"Time for step   {step_frame-mid_frame:.6f} s")
+        # logg.debug(f"Time for render {end_frame-step_frame:.6f} s")
+        # logg.debug(f"Time for frame  {end_frame-start_frame:.6f} s")
+
+        # wait a bit to limit fps
+        clock.tick(fps)
+        i += 1
+        if num_frames > 0:
             if i == num_frames:
                 going = False
 
@@ -284,11 +351,14 @@ if __name__ == "__main__":
     args = setup_env()
     fps = args.fps
     interactive = args.interactive
+    testr = args.tester
     num_frames = args.num_frames
     render_mode = args.render_mode
     sensor_array_type = args.sensor_array_type
 
-    if interactive:
+    if testr:
+        tester_fun(num_frames, fps, sensor_array_type)
+    elif interactive:
         test_interactive_env(num_frames, fps, sensor_array_type)
     else:
         test_automatic_env(num_frames, render_mode, sensor_array_type)

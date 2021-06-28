@@ -173,7 +173,8 @@ class RacerEnv(gym.Env):
 
     def _setup_action_obs_space(self):
 
-        self.action_space = spaces.MultiDiscrete([3, 3])
+        self.action_space = spaces.Box(np.array([-180, -100]), np.array([+180, +100]), dtype=np.float32)
+
 
         if self.sensor_array_type == "diamond":
             HEIGHT = self.racer_car.viewfield_size

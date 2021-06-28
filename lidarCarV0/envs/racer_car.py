@@ -21,10 +21,10 @@ from lidarCarV0.envs.utils import compute_rot_matrix
 class RacerCar(Sprite):
     def __init__(
         self,
-        pos_x=0,
-        pos_y=0,
+        pos_x=400,
+        pos_y=400,
         direction=0,
-        speed=1,
+        speed= 10,
         sensor_array_type="lidar",
         render_mode="human",
         sensor_array_params=None,
@@ -39,20 +39,21 @@ class RacerCar(Sprite):
 
         self.pos_x = pos_x
         self.pos_y = pos_y
-        self.precise_x = pos_x
-        self.precise_y = pos_y
+        self.precise_x = int(pos_x)
+        self.precise_y = int(pos_y)
 
         self.sensor_array_type = sensor_array_type
         self.render_mode = render_mode
         self.sensor_array_params = sensor_array_params
 
         self.direction = direction  # in degrees
+        self.precise_direction = int(direction)
         self.speed = speed
         self.dir_step = 1
-        self.tspan = [0, 2]
+        self.tspan = [0, 0.1]
         self.drag_coeff = 0.5
 
-        self.curr_state = [self.pos_x, self.pos_y, self.direction, self.speed]
+        self.curr_state = [self.precise_x, self.precise_y, self.precise_direction, self.speed]
 
         # setup the sensor_array_template
         self._create_car_sensors()
@@ -72,7 +73,7 @@ class RacerCar(Sprite):
         logg.debug(f"Doing action {action}")
 
         # Using direct Update eqn
-        # self.carmodel.update(action[0], action[1], dt = 2)
+        # self.carmodel.update(action[0], action[1], dt = self.tspan[-1])
         # dY = self.carmodel.get_pose()
 
         #Using ODE Solvers
@@ -82,12 +83,15 @@ class RacerCar(Sprite):
         dY = dY[-1]
         
         # move the car
-        self.pos_x = int(dY[0])
-        self.pos_y = int(dY[1])
-        self.direction = int(normalize_angle(dY[2]))
+        self.precise_x = dY[0]
+        self.precise_y = dY[1]
+        self.precise_direction = normalize_angle(dY[2])
+        self.pos_x = int(self.precise_x)
+        self.pos_y = int(self.precise_y)
+        self.direction = int(self.precise_direction)
         self.speed = dY[3]
-        self.curr_state = [self.pos_x, self.pos_y, self.direction, self.speed]
-        logg.debug(f"Car state: x {self.pos_x} y {self.pos_y} dir {self.direction}")
+        self.curr_state = [self.precise_x, self.precise_y, self.precise_direction, self.speed]
+        logg.debug(f"Car state: x {self.precise_x} y {self.precise_y} dir {self.precise_direction}")
 
         # update Sprite rect and image
         self.rect = self.rot_car_rect[self.direction]
@@ -105,6 +109,7 @@ class RacerCar(Sprite):
         self.precise_y = pos_y
 
         self.direction = direction  # in degrees
+        self.precise_direction = direction  # in degrees
         self.speed = 0
 
         self.rect = self.rot_car_rect[self.direction]

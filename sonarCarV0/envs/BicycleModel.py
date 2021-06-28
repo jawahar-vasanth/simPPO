@@ -1,8 +1,10 @@
 import numpy as np
 import math
 import matplotlib.pyplot as plt
+from math import atan, tan
 
-max_steer = 30  # [deg] max steering angle
+max_steer = math.pi/15  # max steering angle
+max_acc = 5
 L = 2.9  # [m] Wheel base of vehicle
 Lr = L / 2.0  # [m]
 Lf = L - Lr
@@ -30,21 +32,23 @@ class LinearBicycleModel(object):
         :param delta: (float) Steering
         """
         delta = np.clip(delta, -max_steer, max_steer)
-        delta = np.radians(delta)
+        throttle = np.clip(throttle, -max_acc, max_acc)
+
         self.x += self.v * np.cos(self.yaw) * dt
         self.y += self.v * np.sin(self.yaw) * dt
-        self.yaw += np.degrees(self.v / L * np.tan(delta) * dt)
-        self.yaw = normalize_angle(self.yaw)
+        self.yaw += self.v / L * np.tan(delta) * dt
         self.v += throttle * dt
 
-    def derivative(self, t, y, a, delta):
-        delta = np.clip(delta, -max_steer, max_steer)
-        delta = np.radians(delta)
+    def derivative(self, t, y, throttle, delta):
+        # delta = np.clip(delta, -max_steer, max_steer)
+        # delta = normalize_angle(delta)
+        # throttle = np.clip(throttle, -max_acc, max_acc)
+
         beta = math.atan((Lr/L)*math.tan(delta))
         dx = y[3]*math.cos(y[2] + beta)
         dy = y[3]*math.sin(y[2] + beta)
-        dyaw = np.degrees((y[3]/Lr)*math.sin(beta))
-        dv = a
+        dyaw = (y[3]/Lr)*math.sin(beta)
+        dv = throttle
         return [dx,dy,dyaw,dv]
 
     def get_pose(self):
@@ -122,10 +126,5 @@ def normalize_angle(angle):
     :param angle: (float)
     :return: (float) Angle in radian in [-pi, pi]
     """
-    while angle > 360:
-        angle -= 360
-
-    while angle < 0:
-        angle += 360
-
+    angle = np.arctan2(np.sin(angle), np.cos(angle))
     return angle
