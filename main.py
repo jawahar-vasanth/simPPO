@@ -73,22 +73,20 @@ def main(args):
 	hyperparameters = {
 				'timesteps_per_batch': 4096, 
 				'max_timesteps_per_episode': 512, 
-				'gamma': 0.99, 
-				'n_updates_per_iteration': 10,
-				'lr': 3e-4, 
+				'gamma': 0.9, 
+				'n_updates_per_iteration': 5,
+				'lr': 0.05, 
 				'clip': 0.2,
 				'render': True,
-				'render_every_i': 10,
 				'save_freq': 5,
+				'render_every_i': 1,
 				'interm_save': True
 			  }
 	# env_name = 'LunarLanderContinuous-v2'
 	# env = gym.make(env_name)
 	env_name = 'sonarCar-v0'
+	print(env_name)
 	env = gym.make(env_name,render_mode=True ,sensor_display= True)
-
-	# env_name = 'LunarLanderContinuous-v2'
-	# env = gym.make('LunarLanderContinuous-v2')
 
 	if args.exp_name == '':
     		args.exp_name = env_name

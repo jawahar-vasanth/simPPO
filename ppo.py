@@ -19,7 +19,7 @@ class PPO:
 	def __init__(self, policy_class, env, **hyperparameters):
 		# Make sure the environment is compatible with our code
 		assert(type(env.observation_space) == gym.spaces.Box)
-		assert(type(env.action_space) == gym.spaces.Box)
+		# assert(type(env.action_space) == gym.spaces.Box)
 
 		self._init_hyperparameters(hyperparameters)
 		self.env = env

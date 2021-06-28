@@ -14,9 +14,9 @@ if __name__ == "__main__":
     i = 0
     num_frames = 4000
     while going:
-        action = [[0,np.random.uniform(-0.2,0.2)]]
+        action = [[200,0.01]]
         obs, reward, done, info = racer_env.step(action)
-        time.sleep(0.05)
+        # time.sleep(0.05)
         racer_env.render()
         if done:
             racer_env.reset()
